@@ -3,3 +3,5 @@ Menv/
 .env.example
 *.log
 pyproject.toml
+__pycache__/
+*.pyc

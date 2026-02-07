@@ -17,12 +17,19 @@ from src.config import ensure_dirs, DATA_RAW_DIR, EVENTS_FILENAME  # noqa: E402
 
 
 def main() -> None:
-    """ Main function to validate events dataset. """
+    """ Main function to validate the events.csv file. """
     ensure_dirs()
 
     events_path = DATA_RAW_DIR / EVENTS_FILENAME
-    df = pd.read_csv(events_path)
+    if not events_path.exists():
+        raise FileNotFoundError(
+            f"Missing events file: {events_path}\n\n"
+            "Create it at data/raw/events.csv (recommended) with columns:\n"
+            "event_id,event_name,start_date,end_date,event_type,description,region,source\n"
+            "Then rerun: python scripts/04_validate_events.py"
+        )
 
+    df = pd.read_csv(events_path)
     validated = validate_events_df(df)
 
     print(f"[OK] Events validated: {events_path}")
