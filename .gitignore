@@ -1,0 +1,5 @@
+Menv/
+/data/
+.env.example
+*.log
+pyproject.toml
