@@ -13,7 +13,6 @@ if str(_ROOT) not in sys.path:
 # pylint: disable=wrong-import-position
 from src.config import (
     ensure_dirs,
-    DATA_INTERIM_DIR,
     DATA_PROCESSED_DIR,
     BRENT_CLEAN_FILENAME,
     LOG_RETURNS_FILENAME,
@@ -27,7 +26,7 @@ def main() -> None:
     """ Main function to process cleaned Brent prices and compute log returns """
     ensure_dirs()
 
-    clean_path = DATA_INTERIM_DIR / BRENT_CLEAN_FILENAME
+    clean_path = DATA_PROCESSED_DIR / BRENT_CLEAN_FILENAME
     out_path = DATA_PROCESSED_DIR / LOG_RETURNS_FILENAME
 
     df = pd.read_csv(clean_path, parse_dates=["date"]).sort_values(
