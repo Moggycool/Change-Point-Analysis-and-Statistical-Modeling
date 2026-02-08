@@ -170,7 +170,7 @@ If enabled in `scripts/04_validate_events.py`, this also exports:
 
 ---
 
-### Events registry (Task 1 narrative support)
+## Events registry (Task 1 narrative support)
 
 We use a curated historical events registry to interpret structural breaks/change points in Brent crude prices.
 
@@ -186,7 +186,7 @@ This file is validated against the schema in `src/events/schema.py`.
 python scripts/04_validate_events.py
 ```
 
-## Event Registry & Change-Point Interpretation Dataset
+### Event Registry & Change-Point Interpretation Dataset
 
 This project includes a **curated historical events registry** used to
 interpret detected structural breaks (change points) in Brent crude oil
