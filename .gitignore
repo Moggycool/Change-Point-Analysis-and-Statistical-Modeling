@@ -1,7 +1,19 @@
 Menv/
-/data/
+
 .env.example
 *.log
 pyproject.toml
 __pycache__/
 *.pyc
+
+# Ignore all data
+data/*
+
+# Ignore Brent price raw file
+data/raw/brent_prices.csv
+
+# But allow the raw folder structure
+!data/raw/
+
+# Track only this file
+!data/raw/events.csv
