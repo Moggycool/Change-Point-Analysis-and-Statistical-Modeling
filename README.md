@@ -170,18 +170,127 @@ If enabled in `scripts/04_validate_events.py`, this also exports:
 
 ---
 
-## Event Registry (Structured Dataset)
+### Events registry (Task 1 narrative support)
 
-The file `data/raw/events.csv` is a curated set of major oil-market-relevant events (10–15 items).
-It provides the structured assumptions used later to align detected change points with real-world drivers.
+We use a curated historical events registry to interpret structural breaks/change points in Brent crude prices.
 
-**Required columns (validated in code):**
+**Input (raw):**
 
-`event_id, event_name, start_date, end_date, event_type, description, region, source`
+- `data/raw/brent_events.csv`
 
-Validation logic lives in:
+This file is validated against the schema in `src/events/schema.py`.
 
-- `src/events/schema.py`
+**Validation script:**
+
+```bash
+python scripts/04_validate_events.py
+```
+
+## Event Registry & Change-Point Interpretation Dataset
+
+This project includes a **curated historical events registry** used to
+interpret detected structural breaks (change points) in Brent crude oil
+prices.\
+The dataset links **statistical regime shifts** to **real-world
+geopolitical, economic, and market drivers**, enabling meaningful
+narrative explanations.
+
+### Dataset Artifacts
+
+#### Raw Data
+
+- `data/raw/events.csv` --- primary curated registry of
+    oil-market-relevant events (10--15 major items)
+- `data/raw/brent_events.csv` --- optional/raw source table (if
+    maintained separately)
+
+#### Processed / Validated Outputs
+
+- `data/processed/brent_events_validated.csv` --- schema-validated
+    dataset generated during preprocessing
+
+#### Reporting Exports
+
+- `reports/figures/events_summary.csv` --- stakeholder-friendly
+    summary table
+- `reports/figures/events_summary.png` --- visual preview of the
+    summary
+
+### Dataset Purpose
+
+The events registry serves as a **structured reference layer** to:
+
+- Align detected change points with historical events
+- Provide causal hypotheses for price shifts
+- Support stakeholder interpretation and reporting
+- Improve reproducibility of narrative explanations
+
+### Schema (Required Columns)
+
+event_id, event_name, start_date, end_date, event_type, description,
+region, source
+
+#### Field Notes
+
+  -----------------------------------------------------------------------
+  Column                      Description
+  --------------------------- -------------------------------------------
+  event_id                    Unique identifier
+
+  event_name                  Short descriptive title
+
+  start_date                  Event start date
+
+  end_date                    Event end date (or same as start for
+                              single-day events)
+
+  event_type                  Category (geopolitical, OPEC decision,
+                              macro shock, etc.)
+
+  description                 Brief contextual explanation
+
+  region                      Geographic scope
+
+source                      Reference or citation
+  -----------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+### Date Granularity
+
+**Format:** month-start (`YYYY-MM-01`)
+
+Rationale: - Stabilizes joins with daily price data - Reduces noise from
+day-level mismatches - Improves interpretability in reports
+
+### How It Integrates With Change-Point Analysis
+
+1. Change-point detection identifies candidate break dates.
+2. Break dates are matched to nearby events (nearest or within a time
+    window).
+3. Matched events provide historical explanations for regime shifts.
+4. Results feed into reporting and stakeholder narratives.
+
+### Validation
+
+Schema enforcement and cleaning logic:
+
+src/events/schema.py
+
+Run:
+
+``` bash
+python scripts/04_validate_events.py
+```
+
+This step: - checks required columns - validates date formats - removes
+inconsistencies - outputs the processed validated file
+
+### Summary
+
+The events registry transforms **raw statistical breaks → explainable
+business insights**, making the model outputs actionable for analysts,
+policymakers, and energy stakeholders.
 
 ---
 
