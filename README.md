@@ -1,75 +1,62 @@
 # Change Point Analysis and Statistical Modeling
 
-Detecting structural breaks (change points) in **Brent crude oil** time series and associating those changes with **key geopolitical events, OPEC decisions, and macroeconomic shocks**. The project emphasizes a reproducible workflow: data cleaning → feature engineering (log returns) → EDA & stationarity testing → change point modeling → event alignment → insight generation.
+Detecting structural breaks (change points) in **Brent crude oil** time series and associating those changes with **key geopolitical events, OPEC decisions, and macroeconomic shocks**. The project emphasizes a reproducible workflow:
+
+**data cleaning → feature engineering (log returns) → EDA & stationarity testing → change point modeling → event alignment → insight generation**
+
+---
 
 ## Table of Contents
 
 - [Repository Structure](#repository-structure)
 - [Tasks & Deliverables (Interim)](#tasks--deliverables-interim)
 - [Setup](#setup)
+- [Data](#data)
 - [How to Run (Task 1 Pipeline)](#how-to-run-task-1-pipeline)
+- [Event Registry (Structured Dataset)](#event-registry-structured-dataset)
+- [Stakeholder Communication Plan](#stakeholder-communication-plan)
 - [Notebook](#notebook)
 - [Interpreting Results (Important)](#interpreting-results-important)
 - [Testing](#testing)
 - [Configuration](#configuration)
 - [Next Steps (Task 2 Preview)](#next-steps-task-2-preview)
+- [Project Status](#project-status)
+
+---
 
 ## Repository Structure
 
 ```
 Change-Point-Analysis-and-Statistical-Modeling
-├─ .pytest_cache
-│  ├─ CACHEDIR.TAG
-│  ├─ README.md
-│  └─ v
-│     └─ cache
-│        ├─ lastfailed
-│        └─ nodeids
-├─ notebooks
+├─ notebooks/
 │  └─ task1_requirements_notebook.ipynb
-├─ README.md
-├─ reports
-│  ├─ figures
+├─ reports/
+│  ├─ figures/
 │  │  ├─ 01_price_and_log_price.png
 │  │  ├─ 02_log_returns.png
 │  │  ├─ 03_rolling_volatility_30d.png
-│  │  ├─ log_returns_series.png
-│  │  ├─ price_series.png
-│  │  ├─ rolling_volatility.png
 │  │  ├─ stationarity_tests_table.png
 │  │  └─ stationarity_tests_task1.csv
-│  └─ interim
+│  └─ interim/
 │     ├─ assumptions_limitations.md
-│     └─ task1_workflow_plan.md
+│     ├─ task1_workflow_plan.md
+│     └─ communication_plan.md
 ├─ requirements.txt
-├─ scripts
+├─ scripts/
 │  ├─ 01_clean_prices.py
 │  ├─ 02_make_returns.py
 │  ├─ 03_run_task1_eda.py
 │  └─ 04_validate_events.py
-├─ src
+├─ src/
 │  ├─ config.py
-│  ├─ eda
-│  │  ├─ plots.py
-│  │  ├─ time_series_tests.py
-│  │  └─ __init__.py
-│  ├─ events
-│  │  ├─ schema.py
-│  │  └─ __init__.py
-│  ├─ io
-│  │  ├─ load_data.py
-│  │  ├─ save_data.py
-│  │  └─ __init__.py
-│  ├─ utils
-│  │  ├─ dates.py
-│  │  ├─ logging.py
-│  │  └─ __init__.py
-│  └─ __init__.py
-└─ tests
-   ├─ test_cleaning.py
-   └─ test_events_schema.py
-
+│  ├─ eda/
+│  ├─ events/
+│  ├─ io/
+│  └─ utils/
+└─ tests/
 ```
+
+---
 
 ## Tasks & Deliverables (Interim)
 
@@ -77,7 +64,8 @@ Change-Point-Analysis-and-Statistical-Modeling
 
 - **Workflow documentation:** `reports/interim/task1_workflow_plan.md`
 - **Assumptions & limitations (correlation ≠ causation):** `reports/interim/assumptions_limitations.md`
-- **Event dataset:** `data/raw/events.csv` (validated by schema checks; see script below)
+- **Event registry (structured dataset):** `data/raw/events.csv`
+- **Event registry validation:** `python scripts/04_validate_events.py`
 
 ### Task 1 — Time Series Analysis & Model Understanding
 
@@ -90,6 +78,8 @@ Generated outputs (examples):
   - Figure: `reports/figures/stationarity_tests_table.png`
   - CSV: `reports/figures/stationarity_tests_task1.csv`
 
+---
+
 ## Setup
 
 ### 1) Create and activate a virtual environment
@@ -97,68 +87,135 @@ Generated outputs (examples):
 **Windows (PowerShell):**
 
 ```powershell
-
-- python -m venv .venv
+python -m venv .venv
 .venv\Scripts\Activate.ps1
+```
 
-macOS/Linux:
+**macOS/Linux:**
 
-bash
+```bash
 python -m venv .venv
 source .venv/bin/activate
-
 ```
 
 ### 2) Install dependencies
 
-bash
+```bash
+pip install -r requirements.txt
+```
 
-- pip install -r requirements.txt
-Data
+---
+
+## Data
+
 Expected raw input files:
 
-- Brent prices: data/raw/brent_prices.csv
-- Event registry: data/raw/events.csv
-- Column expectations (standardized in src/config.py):
-- date, price, plus engineered columns log_price, log_return after processing.
+- Brent prices: `data/raw/brent_prices.csv`
+- Event registry: `data/raw/events.csv`
 
-- Note: If you do not commit raw data to GitHub (recommended for many projects), place the CSVs locally under data/raw/ before running scripts.
+Column expectations (standardized in `src/config.py`):
 
-### 3) How to Run (Task 1 Pipeline)
+- `date`, `price`, plus engineered columns `log_price`, `log_return` after processing.
+
+> **Note:** If raw price data cannot be committed to GitHub (license/size), keep it locally under `data/raw/`.  
+> The events registry *is* committed because it is part of the analytical assumptions and is required for reproducibility.
+
+---
+
+## How to Run (Task 1 Pipeline)
 
 Run scripts from the repository root:
 
-- Clean prices
-bash
+### Clean prices
+
+```bash
 python scripts/01_clean_prices.py
-- Create log price + log returns features
-bash
+```
+
+### Create log price + log returns features
+
+```bash
 python scripts/02_make_returns.py
-- Run EDA and stationarity tests (exports figures/tables to reports/)
-bash
+```
+
+### Run EDA and stationarity tests (exports figures/tables to `reports/`)
+
+```bash
 python scripts/03_run_task1_eda.py
-- Validate the event dataset schema
-bash
+```
+
+### Validate the event registry (schema + basic consistency)
+
+```bash
 python scripts/04_validate_events.py
-- Notebook
-notebooks/task1_requirements_notebook.ipynb contains the Task 1 analysis narrative and reproduces key charts and stationarity results.
+```
+
+If enabled in `scripts/04_validate_events.py`, this also exports:
+
+- `reports/figures/events_summary.csv`
+- `reports/figures/events_summary.png`
+
+---
+
+## Event Registry (Structured Dataset)
+
+The file `data/raw/events.csv` is a curated set of major oil-market-relevant events (10–15 items).
+It provides the structured assumptions used later to align detected change points with real-world drivers.
+
+**Required columns (validated in code):**
+
+`event_id, event_name, start_date, end_date, event_type, description, region, source`
+
+Validation logic lives in:
+
+- `src/events/schema.py`
+
+---
+
+## Stakeholder Communication Plan
+
+To make results directly actionable for decision-makers, the project includes an explicit communication plan:
+
+- `reports/interim/communication_plan.md`
+
+This defines audiences, decisions supported, outputs, cadence, and update triggers.
+
+---
+
+## Notebook
+
+- `notebooks/task1_requirements_notebook.ipynb`
+
+Contains the Task 1 analysis narrative and reproduces key charts and stationarity results.
+
+---
 
 ## Interpreting Results
 
-- Correlation vs causation: Change point detection identifies statistical regime shifts. Matching change points to events (within a ±window) suggests temporal association and should be treated as a hypothesis, not causal proof.
+- **Correlation vs causation:** Change point detection identifies statistical regime shifts. Matching change points to events (within a ±window) suggests temporal association and should be treated as a hypothesis, not causal proof.
+- **Modeling choice:** Raw prices are typically non-stationary; log returns are commonly used for change point modeling because they are closer to stationary and better reflect shocks/volatility.
 
-- Modeling choice: Raw prices are typically non-stationary; log returns are commonly used for change point modeling because they are closer to stationary and better reflect shocks/volatility.
+---
 
 ## Testing
 
 Run unit tests:
 
-bash
+```bash
 pytest -q
+```
+
+---
 
 ## Configuration
 
-Centralized configuration is in src/config.py (paths, filenames, column standards, defaults like rolling window length).
+Centralized configuration is in:
+
+- `src/config.py`
+
+It defines paths, filenames, column standards, and defaults like rolling volatility window and (later) event matching window.
+
+---
 
 ## Next Steps (Task 2 Preview)
 
@@ -168,8 +225,16 @@ Task 2 will implement Bayesian change point model(s) (PyMC/ArviZ) to estimate:
 - before/after parameters (e.g., mean return shift and/or volatility regime shift)
 - event alignment tables to support narrative insight generation
 
+---
+
 ## Project Status
 
-- Current Phase: Task 1 - Exploratory Data Analysis & Stationarity Testing
-- Next Phase: Task 2 - Bayesian Change Point Modeling
-- Last Updated: February 8 2024
+- **Current Phase:** Task 1 — Exploratory Data Analysis & Stationarity Testing + Event Registry  
+- **Next Phase:** Task 2 — Bayesian Change Point Modeling  
+- **Last Updated:** 2026-02-08
+
+## Stakeholder Communication Plan (Brent Change-Point Analysis)
+
+found in:
+
+- ...\reports\interim\communication_plan.md
