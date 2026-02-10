@@ -31,7 +31,9 @@ BRENT_RAW_FILENAME = "brent_prices.csv"
 
 BRENT_CLEAN_FILENAME = "brent_prices_clean.csv"
 EDA_SUMMARY_FILENAME = "eda_summary.json"
-EVENTS_FILENAME = "events.csv"
+
+# UPDATED: match your real events file name
+EVENTS_FILENAME = "brent_events.csv"
 
 LOG_PRICE_FILENAME = "brent_log_price.csv"
 LOG_RETURNS_FILENAME = "brent_log_returns.csv"
