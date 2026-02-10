@@ -1,10 +1,20 @@
 Menv/
-/data/
+
 .env.example
 *.log
 pyproject.toml
 __pycache__/
 *.pyc
+
+# Ignore all data (but keep selected raw files)
+data/*
+!data/raw/
+!data/raw/events.csv
+!data/raw/brent_events.csv
+!data/raw/sources.md
+
+# Ignore Brent price raw file
+data/raw/brent_prices.csv
 
 # Large model artifacts
 /reports/interim/*.nc
