@@ -1,0 +1,55 @@
+{
+  "standardize_returns": false,
+  "y_mean_if_standardized": null,
+  "y_std_if_standardized": null,
+  "priors_used": {
+    "mu_prior_sigma": 0.051064396165259575,
+    "sigma_prior_sigma": 0.051064396165259575,
+    "y_std": 0.025532198082629787
+  },
+  "m1_convergence": {
+    "ok": false,
+    "max_rhat": 1.83,
+    "min_ess_bulk": 7.0,
+    "min_ess_tail": 39.0,
+    "offending": {
+      "tau": {
+        "rhat": 1.83,
+        "ess_bulk": 8.0,
+        "ess_tail": 79.0
+      },
+      "mu_1": {
+        "rhat": 1.1,
+        "ess_bulk": 127.0,
+        "ess_tail": 39.0
+      },
+      "mu_2": {
+        "rhat": 1.5,
+        "ess_bulk": 7.0,
+        "ess_tail": 87.0
+      },
+      "sigma": {
+        "rhat": 1.02,
+        "ess_bulk": 190.0,
+        "ess_tail": 334.0
+      }
+    }
+  },
+  "m2_convergence": {
+    "ok": true,
+    "max_rhat": 1.0,
+    "min_ess_bulk": 1214.0,
+    "min_ess_tail": 1691.0,
+    "offending": {}
+  },
+  "m1_cp_date_mode": "2020-04-22",
+  "m2_cp_date_mode": "2008-08-21",
+  "artifacts": {
+    "idata_m1": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\idata_m1_mean_switch.nc",
+    "idata_m2": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\idata_m2_sigma_switch.nc",
+    "comparison": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_model_comparison.csv",
+    "comparison_error_log": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_model_comparison_loo_error.txt",
+    "m1_loglik_diag": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_m1_loglik_diagnostics.json",
+    "m2_loglik_diag": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_m2_loglik_diagnostics.json"
+  }
+}

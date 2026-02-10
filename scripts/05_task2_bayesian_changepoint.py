@@ -1,5 +1,14 @@
 """Bayesian changepoint analysis for Task 2.
-- Model 1: switch in mean (mu_1 vs mu_2)"""
+
+Models:
+- Model 1: switch in mean (mu_1 vs mu_2)
+- Model 2: switch in volatility (sigma_1 vs sigma_2)
+
+Updates:
+- Ensure pointwise log_likelihood is stored during sampling (compute_log_likelihood=True)
+- Use compare_models_safe() to attempt LOO then fallback to WAIC with full traceback logging
+- Save idata to NetCDF for reproducibility/offline debugging
+"""
 # scripts/05_task2_bayesian_changepoint.py
 from __future__ import annotations
 
@@ -14,14 +23,14 @@ import matplotlib.pyplot as plt
 
 import pymc as pm
 import arviz as az
-# Get project root (must run before importing from src.* when executing as a script)
+
 # Get project root (must run before importing from src.* when executing as a script)
 _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 # pylint: disable=wrong-import-position
-from src.config import (
+from src.config import (  # noqa: E402
     ensure_dirs,
     DATA_PROCESSED_DIR,
     DATA_RAW_DIR,
@@ -33,13 +42,13 @@ from src.config import (
     EVENT_MATCH_WINDOW_DAYS,
     COL_DATE,
     COL_LOG_RETURN,
-)  # noqa: E402
+)
 
 from src.data.io_task2 import load_log_returns_csv, ensure_log_features  # noqa: E402
 from src.events.io_task2 import load_events  # noqa: E402
 from src.eda.plots_task2 import plot_price, plot_log_returns, plot_rolling_volatility  # noqa: E402
 
-from src.models.bayes_changepoint_task2 import (
+from src.models.bayes_changepoint_task2 import (  # noqa: E402
     build_switchpoint_mean_model,
     build_switchpoint_sigma_model,
     # build_switchpoint_mean_model_studentt,  # optional
@@ -50,11 +59,14 @@ from src.models.bayes_changepoint_task2 import (
     compute_convergence_report,
     prior_settings_summary,
     standardize,
-)  # noqa: E402
+    compare_models_safe,
+    save_idata,
+    validate_log_likelihood_finite,
+)
 
 
 def main() -> None:
-    """Main function to run Bayesian changepoint analysis for Task 2."""
+    """Run Bayesian changepoint analysis for Task 2."""
     ensure_dirs()
     REPORTS_FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     REPORTS_INTERIM_DIR.mkdir(parents=True, exist_ok=True)
@@ -69,7 +81,9 @@ def main() -> None:
     df = load_log_returns_csv(data_path)
     df = ensure_log_features(df)
 
+    # -------------------------
     # EDA figs
+    # -------------------------
     fig = plot_price(df)
     fig.savefig(REPORTS_FIGURES_DIR / "task2_01_price_raw.png",
                 dpi=150, bbox_inches="tight")
@@ -89,6 +103,9 @@ def main() -> None:
     )
     plt.close(fig)
 
+    # -------------------------
+    # Clean series
+    # -------------------------
     y = df[COL_LOG_RETURN].to_numpy(dtype=float)
     mask = np.isfinite(y)
     y_clean = y[mask]
@@ -111,11 +128,20 @@ def main() -> None:
     # Model 1: mean switch
     # -------------------------
     model_m1 = build_switchpoint_mean_model(y_model)
-    idata_m1 = sample_model(model_m1, draws=2000, tune=2000,
-                            chains=4, target_accept=0.9, random_seed=42)
+    idata_m1 = sample_model(
+        model_m1,
+        draws=2000,
+        tune=2000,
+        chains=4,
+        target_accept=0.9,
+        random_seed=42,
+        compute_log_likelihood=True,
+    )
+    save_idata(idata_m1, str(REPORTS_INTERIM_DIR / "idata_m1_mean_switch.nc"))
 
     conv_m1 = compute_convergence_report(
         idata_m1, ["tau", "mu_1", "mu_2", "sigma"])
+
     az.plot_trace(idata_m1, var_names=["tau", "mu_1", "mu_2", "sigma"])
     plt.tight_layout()
     plt.savefig(REPORTS_FIGURES_DIR / "task2_m1_trace.png",
@@ -131,6 +157,7 @@ def main() -> None:
     with model_m1:
         ppc_m1 = pm.sample_posterior_predictive(idata_m1, random_seed=42)
     idata_m1.extend(ppc_m1)
+
     az.plot_ppc(idata_m1, data_pairs={"obs": "obs"}, num_pp_samples=200)
     plt.tight_layout()
     plt.savefig(REPORTS_FIGURES_DIR / "task2_m1_ppc.png",
@@ -139,13 +166,14 @@ def main() -> None:
 
     impact_m1 = compute_impact_summary(idata_m1, dates_clean)
     pd.DataFrame([impact_m1.__dict__]).to_csv(
-        REPORTS_INTERIM_DIR / "task2_m1_impact_summary.csv", index=False)
+        REPORTS_INTERIM_DIR / "task2_m1_impact_summary.csv",
+        index=False,
+    )
 
     tau_m1_df = map_tau_samples_to_dates(idata_m1, dates_clean)
     tau_m1_df.to_csv(REPORTS_INTERIM_DIR /
                      "task2_m1_tau_samples.csv", index=False)
 
-    # tau-date mass plot
     fig, ax = plt.subplots(1, 1, figsize=(10, 3))
     ax.hist(pd.to_datetime(tau_m1_df["tau_date"]), bins=60)
     ax.set_title("Posterior mass of change-point date (Model 1: mean switch)")
@@ -155,15 +183,28 @@ def main() -> None:
                 dpi=150, bbox_inches="tight")
     plt.close(fig)
 
+    (REPORTS_INTERIM_DIR / "task2_m1_loglik_diagnostics.json").write_text(
+        json.dumps(validate_log_likelihood_finite(idata_m1), indent=2)
+    )
+
     # -------------------------
     # Model 2: sigma switch
     # -------------------------
     model_m2 = build_switchpoint_sigma_model(y_model)
-    idata_m2 = sample_model(model_m2, draws=2000, tune=2000,
-                            chains=4, target_accept=0.9, random_seed=42)
+    idata_m2 = sample_model(
+        model_m2,
+        draws=2000,
+        tune=2000,
+        chains=4,
+        target_accept=0.9,
+        random_seed=42,
+        compute_log_likelihood=True,
+    )
+    save_idata(idata_m2, str(REPORTS_INTERIM_DIR / "idata_m2_sigma_switch.nc"))
 
     conv_m2 = compute_convergence_report(
         idata_m2, ["tau", "mu", "sigma_1", "sigma_2"])
+
     az.plot_trace(idata_m2, var_names=["tau", "mu", "sigma_1", "sigma_2"])
     plt.tight_layout()
     plt.savefig(REPORTS_FIGURES_DIR / "task2_m2_trace.png",
@@ -185,6 +226,7 @@ def main() -> None:
     with model_m2:
         ppc_m2 = pm.sample_posterior_predictive(idata_m2, random_seed=42)
     idata_m2.extend(ppc_m2)
+
     az.plot_ppc(idata_m2, data_pairs={"obs": "obs"}, num_pp_samples=200)
     plt.tight_layout()
     plt.savefig(REPORTS_FIGURES_DIR / "task2_m2_ppc.png",
@@ -192,8 +234,10 @@ def main() -> None:
     plt.close()
 
     impact_m2 = compute_sigma_impact_summary(idata_m2, dates_clean)
-    pd.DataFrame([impact_m2]).to_csv(REPORTS_INTERIM_DIR /
-                                     "task2_m2_sigma_impact_summary.csv", index=False)
+    pd.DataFrame([impact_m2]).to_csv(
+        REPORTS_INTERIM_DIR / "task2_m2_sigma_impact_summary.csv",
+        index=False,
+    )
 
     tau_m2_df = map_tau_samples_to_dates(idata_m2, dates_clean)
     tau_m2_df.to_csv(REPORTS_INTERIM_DIR /
@@ -208,15 +252,21 @@ def main() -> None:
                 dpi=150, bbox_inches="tight")
     plt.close(fig)
 
+    (REPORTS_INTERIM_DIR / "task2_m2_loglik_diagnostics.json").write_text(
+        json.dumps(validate_log_likelihood_finite(idata_m2), indent=2)
+    )
+
     # -------------------------
-    # Optional: model comparison (LOO)
+    # Model comparison (LOO with safe fallback)
     # -------------------------
-    try:  # pylint: disable=broad-exception-caught
-        cmp = az.compare(
-            {"mean_switch": idata_m1, "sigma_switch": idata_m2}, ic="loo")
-        cmp.to_csv(REPORTS_INTERIM_DIR / "task2_model_comparison_loo.csv")
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        (REPORTS_INTERIM_DIR / "task2_model_comparison_loo_error.txt").write_text(str(e))
+    cmp = compare_models_safe(
+        {"mean_switch": idata_m1, "sigma_switch": idata_m2},
+        ic="loo",
+        fallback_ic="waic",
+        error_path=str(REPORTS_INTERIM_DIR /
+                       "task2_model_comparison_loo_error.txt"),
+    )
+    cmp.to_csv(REPORTS_INTERIM_DIR / "task2_model_comparison.csv")
 
     # -------------------------
     # Optional: events near CP
@@ -253,6 +303,14 @@ def main() -> None:
         "m2_convergence": conv_m2.__dict__,
         "m1_cp_date_mode": impact_m1.tau_mode_date,
         "m2_cp_date_mode": impact_m2["tau_mode_date"],
+        "artifacts": {
+            "idata_m1": str(REPORTS_INTERIM_DIR / "idata_m1_mean_switch.nc"),
+            "idata_m2": str(REPORTS_INTERIM_DIR / "idata_m2_sigma_switch.nc"),
+            "comparison": str(REPORTS_INTERIM_DIR / "task2_model_comparison.csv"),
+            "comparison_error_log": str(REPORTS_INTERIM_DIR / "task2_model_comparison_loo_error.txt"),
+            "m1_loglik_diag": str(REPORTS_INTERIM_DIR / "task2_m1_loglik_diagnostics.json"),
+            "m2_loglik_diag": str(REPORTS_INTERIM_DIR / "task2_m2_loglik_diagnostics.json"),
+        },
     }
     (REPORTS_INTERIM_DIR / "task2_run_metadata.json").write_text(json.dumps(meta, indent=2))
 

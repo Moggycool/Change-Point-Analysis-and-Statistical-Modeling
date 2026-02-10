@@ -1,0 +1,27 @@
+{
+  "m1_ok": false,
+  "m1_offending": {
+    "tau": {
+      "rhat": 1.83,
+      "ess_bulk": 8.0,
+      "ess_tail": 79.0
+    },
+    "mu_1": {
+      "rhat": 1.1,
+      "ess_bulk": 127.0,
+      "ess_tail": 39.0
+    },
+    "mu_2": {
+      "rhat": 1.5,
+      "ess_bulk": 7.0,
+      "ess_tail": 87.0
+    },
+    "sigma": {
+      "rhat": 1.02,
+      "ess_bulk": 190.0,
+      "ess_tail": 334.0
+    }
+  },
+  "m2_ok": true,
+  "m2_offending": {}
+}

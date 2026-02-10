@@ -5,3 +5,6 @@ Menv/
 pyproject.toml
 __pycache__/
 *.pyc
+
+# Large model artifacts
+/reports/interim/*.nc

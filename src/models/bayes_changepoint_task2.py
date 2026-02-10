@@ -4,6 +4,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Sequence, Dict, Any, Tuple, cast
 
+import os
+import traceback
+
 import numpy as np
 import pandas as pd
 
@@ -40,7 +43,6 @@ def compute_convergence_report(
         kind="all",
     )
 
-    # Handle possible naming differences across arviz versions
     rhat_col = "r_hat" if "r_hat" in s.columns else (
         "rhat" if "rhat" in s.columns else None)
     ess_bulk_col = "ess_bulk" if "ess_bulk" in s.columns else None
@@ -261,10 +263,18 @@ def sample_model(
     chains: int = 4,
     target_accept: float = 0.9,
     random_seed: int = 42,
+    compute_log_likelihood: bool = True,
 ) -> az.InferenceData:
     """
     Sample model with PyMC defaults; discrete tau will be handled by a discrete sampler.
+
+    Key fix for LOO/compare:
+    - ensure idata contains pointwise log_likelihood (required for PSIS-LOO).
     """
+    idata_kwargs: Dict[str, Any] = {}
+    if compute_log_likelihood:
+        idata_kwargs["log_likelihood"] = True
+
     with model:
         idata = pm.sample(
             draws=draws,
@@ -274,8 +284,86 @@ def sample_model(
             random_seed=random_seed,
             return_inferencedata=True,
             progressbar=True,
+            idata_kwargs=idata_kwargs if idata_kwargs else None,
         )
     return idata
+
+
+# -----------------------------
+# LOO / Compare helpers (NEW)
+# -----------------------------
+def _idata_has_log_likelihood(idata: az.InferenceData) -> bool:
+    return hasattr(idata, "log_likelihood") and (idata.log_likelihood is not None)
+
+
+def validate_log_likelihood_finite(idata: az.InferenceData) -> Dict[str, Any]:
+    """
+    Returns diagnostics about log_likelihood presence and finiteness.
+    """
+    out: Dict[str, Any] = {
+        "has_log_likelihood": _idata_has_log_likelihood(idata)}
+    if not out["has_log_likelihood"]:
+        return out
+
+    try:
+        ll_arr = idata.log_likelihood.to_array().values
+        out["finite_fraction"] = float(np.isfinite(ll_arr).mean())
+        out["ll_min"] = float(np.nanmin(ll_arr))
+        out["ll_max"] = float(np.nanmax(ll_arr))
+    except Exception as e:
+        out["error"] = f"Could not evaluate finiteness: {e!r}"
+    return out
+
+
+def compare_models_safe(
+    models: Dict[str, az.InferenceData],
+    ic: str = "loo",
+    fallback_ic: str = "waic",
+    error_path: Optional[str] = None,
+) -> pd.DataFrame:
+    """
+    Robust model comparison:
+    - tries az.compare with ic (default loo)
+    - if it fails, writes full traceback to error_path (if provided)
+      and falls back to WAIC.
+
+    Returns the compare dataframe.
+    """
+    try:
+        return az.compare(models, ic=ic)
+
+    except Exception:
+        tb = traceback.format_exc()
+        msg_lines = [
+            f"Encountered error in ELPD computation of compare.",
+            f"Requested ic={ic!r}. Falling back to ic={fallback_ic!r}.",
+            "",
+            "Diagnostics per model (log_likelihood checks):",
+        ]
+        for name, idata in models.items():
+            diag = validate_log_likelihood_finite(idata)
+            msg_lines.append(f"- {name}: {diag}")
+
+        msg_lines.append("")
+        msg_lines.append("Full traceback:")
+        msg_lines.append(tb)
+        msg = "\n".join(msg_lines)
+
+        if error_path is not None:
+            os.makedirs(os.path.dirname(error_path), exist_ok=True)
+            with open(error_path, "w", encoding="utf-8") as f:
+                f.write(msg)
+
+        # Fallback
+        return az.compare(models, ic=fallback_ic)
+
+
+def save_idata(idata: az.InferenceData, path: str) -> None:
+    """
+    Convenience: persist idata so you can debug LOO later without rerunning MCMC.
+    """
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    idata.to_netcdf(path)
 
 
 # -----------------------------
