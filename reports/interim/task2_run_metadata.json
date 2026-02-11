@@ -43,13 +43,24 @@
     "offending": {}
   },
   "m1_cp_date_mode": "2020-04-22",
+  "m1_cp_date_hdi_94": [
+    "1987-09-01",
+    "2021-01-28"
+  ],
   "m2_cp_date_mode": "2008-08-21",
+  "m2_cp_date_hdi_94": [
+    "2008-05-28",
+    "2008-09-12"
+  ],
+  "events_filename_from_config": "brent_events.csv",
   "artifacts": {
     "idata_m1": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\idata_m1_mean_switch.nc",
     "idata_m2": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\idata_m2_sigma_switch.nc",
     "comparison": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_model_comparison.csv",
     "comparison_error_log": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_model_comparison_loo_error.txt",
     "m1_loglik_diag": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_m1_loglik_diagnostics.json",
-    "m2_loglik_diag": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_m2_loglik_diagnostics.json"
+    "m2_loglik_diag": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_m2_loglik_diagnostics.json",
+    "m1_tau_date_summary": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_m1_tau_date_summary.csv",
+    "m2_tau_date_summary": "D:\\Python\\Week11\\Change-Point-Analysis-and-Statistical-Modeling\\reports\\interim\\task2_m2_tau_date_summary.csv"
   }
 }

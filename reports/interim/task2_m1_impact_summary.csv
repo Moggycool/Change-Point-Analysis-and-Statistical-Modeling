@@ -1,2 +1,2 @@
-tau_mode,tau_mode_date,prob_mu2_gt_mu1,delta_mu_mean,delta_mu_hdi_low,delta_mu_hdi_high
-8359,2020-04-22,0.7795,0.001383199451624598,-0.0017225997866231178,0.0047715591516099805
+tau_mode,tau_mode_date,tau_hdi_low,tau_hdi_high,tau_hdi_low_date,tau_hdi_high_date,prob_mu2_gt_mu1,delta_mu_mean,delta_mu_hdi_low,delta_mu_hdi_high
+8359,2020-04-22,72,8555,1987-09-01,2021-01-28,0.7795,0.001383199451624598,-0.0017225997866231178,0.0047715591516099805
