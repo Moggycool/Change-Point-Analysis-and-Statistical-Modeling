@@ -18,5 +18,3 @@ data/raw/brent_prices.csv
 
 # Large model artifacts
 /reports/interim/*.nc
-# Frontend dependencies
-dashboard_frontend/node_modules/
