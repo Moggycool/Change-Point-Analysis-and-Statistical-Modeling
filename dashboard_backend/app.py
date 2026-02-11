@@ -126,10 +126,27 @@ def _rolling_vol(returns: pd.Series, window: int = 30) -> pd.Series:
     """Compute rolling volatility (std) with a minimum number of observations."""
     return returns.rolling(window=window, min_periods=max(5, window // 3)).std()
 
+# Root endpoint to list available routes and basic status
 
+
+@app.get("/")
+def index():
+    return jsonify({
+        "status": "ok",
+        "routes": [
+            "/api/health",
+            "/api/metadata",
+            "/api/prices",
+            "/api/events",
+            "/api/changepoints",
+            "/api/event-correlation"
+        ]
+    })
 # -----------------------------
 # Endpoints
 # -----------------------------
+
+
 @app.get("/api/health")
 def health():
     """Simple health check endpoint."""
