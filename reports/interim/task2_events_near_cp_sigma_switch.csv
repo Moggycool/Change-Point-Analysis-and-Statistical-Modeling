@@ -1,0 +1,2 @@
+event_id,date,event_end_date,event_title,event_description,event_type,region,expected_direction,confidence,source_name,source_url,notes,days_from_cp
+E05_global_fin_crisis_2008,2008-09-01,2009-06-01,Global Financial Crisis (Lehman; demand collapse),Financial crisis led to sharp contraction in economic activity and oil demand; major price collapse and volatility regime shift.,financial_crisis,global,down,high,General reference (curate with EIA/World Bank),,,11
