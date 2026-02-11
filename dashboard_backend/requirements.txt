@@ -42,11 +42,9 @@ miniKanren==1.0.5
 ml_dtypes==0.5.4
 multipledispatch==1.0.0
 nest-asyncio==1.6.0
-npm==0.1.1
 numba==0.63.1
 numpy==2.3.5
 opt_einsum==3.4.0
-optional-django==0.1.0
 packaging==26.0
 pandas==3.0.0
 parso==0.8.5
