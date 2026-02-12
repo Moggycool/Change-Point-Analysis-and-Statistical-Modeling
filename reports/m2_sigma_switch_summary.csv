@@ -1,0 +1,5 @@
+parameter,mean,sd,hdi_3%,hdi_97%,model
+tau,5389.5044,21.475,5346.0,5421.0,m2_sigma_switch
+mu,0.0002,0.0003,-0.0003,0.0007,m2_sigma_switch
+sigma_1,0.023,0.0002,0.0226,0.0235,m2_sigma_switch
+sigma_2,0.0289,0.0003,0.0282,0.0295,m2_sigma_switch
